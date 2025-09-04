@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Florr.io Maze Tool</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+  <h1>florr.io maze tool</h1>
+  <p>By Stoplookin9</p>
+  <canvas id="main" width="605" height="605"></canvas>
+  <p id="msg"></p>
+  <button id="shiftLeft" onclick="shiftLeft()">Shift left</button>
+  <button id="shiftRight" onclick="shiftRight()">Shift right</button>
+  <script>
+    //define stuff
+    var canvas = document.getElementById("main");
+    var ctx = canvas.getContext("2d");
+    var msg = document.getElementById("msg");
+    //set up maze map
+    //first, create an array to store blank maze info
+    var maze = new Array(21);
+    for (var i = 0; i < 21; i++) {
+      maze[i] = new Array(21).fill("black");
+    }
+    //the actual maze is 23 by 23, but outer walls exist
+    //mouse stuff
+    var mouse = {
+      x: 0,
+      y: 0
+    }
+    var shiftAmount = 11
+    //draw the maze
+    console.log(maze);
+    function drawMaze() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      //draw the outer walls
+      ctx.fillStyle = "black";
+      //we'll be real lazy and draw a big rect
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      //draw the current maze
+      for (var i = 0; i < 21; i++) {
+        for (var j = 0; j < 21; j++) {
+          ctx.fillStyle = maze[i][j];
+          ctx.fillRect(40 + i * 25, 40 + j * 25, 25, 25);
+        }
+      }
+      //draw spawn portal
+      ctx.fillStyle = "white";
+      ctx.fillRect(15 + 25 * shiftAmount, 15 + 25 * 22, 25, 25);
+      //draw the grids
+      ctx.strokeStyle = "red";
+      console.log("draw");
+      ctx.beginPath();
+      for (var i = 1; i < 23; i++) {
+        ctx.moveTo(40, 15 + i * 25);
+        ctx.lineTo(565, 15 + i * 25);
+        ctx.moveTo(15 + i * 25, 40);
+        ctx.lineTo(15 + i * 25, 565);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      //outline highlighted tile
+      ctx.strokeStyle = "green";
+      ctx.strokeRect(Math.floor(mouse.x / 25) * 25 - 10, Math.floor(mouse.y / 25) * 25 - 10, 25, 25)
+      msg.innerHTML = `x: ${mouse.x} y: ${mouse.y}`;
+      window.requestAnimationFrame(drawMaze);
+    }
+
+    canvas.onmousemove = (event) => {
+      rect = canvas.getBoundingClientRect()
+      mouse.x = event.clientX - rect.left;
+      mouse.y = event.clientY - rect.top;
+    }
+    function drawTile() {
+      selected = [Math.floor((mouse.x - 10)/ 25) - 1, Math.floor((mouse.y - 10)/ 25) - 1];
+      console.log(selected);
+      if (maze[selected[0]][selected[1]] === "black") {
+        maze[selected[0]][selected[1]] = "white";
+      } else if (maze[selected[0]][selected[1]] === "white") {
+        maze[selected[0]][selected[1]] = "black";
+      }
+
+    }
+
+    canvas.onmousedown = (event) => {
+      rect = canvas.getBoundingClientRect()
+      mouse.x = event.clientX - rect.left;
+      mouse.y = event.clientY - rect.top;
+      drawTile();
+    }
+
+    window.requestAnimationFrame(drawMaze);
+    function shiftRight() {
+      maze.pop(0);
+      maze.unshift(new Array(21).fill("black"));
+      if (shiftAmount < 21) {
+        shiftAmount++;
+      }
+    }
+    function shiftLeft() {
+      maze.shift();
+      maze.push(new Array(21).fill("black"));
+      if (shiftAmount > 1) {
+        shiftAmount--;
+      }
+    }
+  </script>
+</body>
+
+</html>
